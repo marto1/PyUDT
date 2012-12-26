@@ -53,7 +53,11 @@ class UdtSocket(object):
         """
         if _sock != None:
             self.__sock = _sock
+            self.__udpsock = None
         else:
+            self.__udpsock = socklib.socket(family,
+                                            socklib.SOCK_DGRAM,
+                                            protocol)
             self.__sock = udt4.socket(family, type, protocol) 
     
     
@@ -123,7 +127,11 @@ class UdtSocket(object):
         :param  address:    device ip port pair  
         :type   address:    tuple( str(), int() )
         """
-        udt4.bind(self.__sock, str(address[0]), int(address[1]))
+        if self.__udpsock != None:
+            self.__udpsock.bind(address)
+            udt4.bind_to_udp(self.__sock, self.__udpsock.fileno())
+        else:
+            udt4.bind(self.__sock, str(address[0]), int(address[1]))
         
 
     def close(self):
@@ -172,9 +180,14 @@ class UdtSocket(object):
 
     def fileno(self, udt_fileno = False):
         """
-        Return the associated UDTSOCKET instance.  
+        Returns file descriptor of the underlying UDP socket,
+        if not initialized from another UDT socket,
+        the UDTSOCKET instance otherwise.
         """
-        return self.__sock.UDTSOCKET
+        if self.__udpsock != None:
+            return self.__udpsock.fileno()
+        else:
+            return self.__sock.UDTSOCKET
 
 
     def getpeername(self):
