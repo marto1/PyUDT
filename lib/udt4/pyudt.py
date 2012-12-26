@@ -58,7 +58,8 @@ class UdtSocket(object):
             self.__udpsock = socklib.socket(family,
                                             socklib.SOCK_DGRAM,
                                             protocol)
-            self.__sock = udt4.socket(family, type, protocol) 
+            self.__sock = udt4.socket(family, type, protocol)
+            udt4.bind_to_udp(self.__sock, self.__udpsock.fileno())
     
     
     @property
@@ -129,7 +130,6 @@ class UdtSocket(object):
         """
         if self.__udpsock != None:
             self.__udpsock.bind(address)
-            udt4.bind_to_udp(self.__sock, self.__udpsock.fileno())
         else:
             udt4.bind(self.__sock, str(address[0]), int(address[1]))
         
@@ -139,7 +139,8 @@ class UdtSocket(object):
         Closes a socket connection, please @see UdtSocket.__del__ for expected
         behaviour explanation.
         """
-        udt4.close(self.__sock)  
+        udt4.close(self.__sock)
+        self.__udpsock.close()
 
 
     def connect(self, address):
